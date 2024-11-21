@@ -1,10 +1,7 @@
 ---
 title: "Summary of Respondents and Doctoral Counts with Estimation by State for 2022 ACS"
 author: 
-  - Yiyi Feng
-  - Bo Tang
-  - Mingjin Zhan
-  - Eric Pang
+  - Yiyi Feng 
   - Sakura Hu
 date: today
 date-format: long
@@ -13,7 +10,8 @@ format:
     toc: true
     number-sections: true
 number-sections: true
-abstract: "This exercise is for estimating the number of respondents who get a doctoral degree for each state in US 2022 ACS."
+thanks: "Code and data are available at: https://github.com/kqlqkqlqF/Summary-of-Respondents-for-2022-ACS.git."
+abstract: "This paper examines state-level population estimates using the 2022 American Community Survey (ACS) data from IPUMS USA. The study applies the ratio estimator method, using the ratio between the number of respondents and doctoral degree in California as a baseline, to estimate the total number of respondents across all states. Comparing these estimates with actual respondent counts revealed significant discrepancies, largely due to variations in population demographics and sampling distributions across states. These findings highlight the limitations of ratio-based estimations in contexts with diverse demographic and sampling characteristics.."
 bibliography: references.bib
 ---
 
@@ -22,8 +20,15 @@ bibliography: references.bib
 #| warning: false
 #| message: false
 
+
+#### Preamble ####
+# Purpose: Help constructing the "Summary of Respondents and Doctoral Counts with Estimation by State for 2022 ACS" paper
+
+# Author: Yiyi Feng, Sakura Hu
+# Date: 21 November 2024
+#Contact: yiyi.feng@mail.utoronto.ca, sakura.hu@mail.utoronto.ca
+
 library(tidyverse)
-library(ggplot2)
 library(dplyr)
 library(knitr)
 
@@ -34,13 +39,24 @@ data <-
     show_col_types = FALSE)
 ```
 
+# Introduction
 
-# Data Obtaining
+Accurately estimating state-level populations using sample data is a critical task in demographic research, with implications for policymaking, resource allocation, and regional planning. The 2022 American Community Survey (ACS) dataset [@ipumsusa2022], accessed via IPUMS USA, provides detailed information on individual respondents, enabling state-by-state analyses of population characteristics. However, estimating total populations across states using ratio-based methods introduces challenges due to varying demographic and educational dynamics across regions.
 
-To obtain the data from IPUMS USA [@ipumsusa2022], follow these steps:
+This paper applies the ratio estimator approach to estimate the total number of respondents in each U.S. state, using California's data as a baseline. The ratio of doctoral degree holders to total respondents in California was used to project total respondent counts for other states. These estimates were then compared to actual respondent numbers, revealing notable discrepancies. These differences stem from variations in state education policies, the distribution of educational resources, population age structures, and the influence of regional industries. For instance, states with a concentration of research institutions or industries requiring advanced education often exhibit higher proportions of doctoral degree holders, while demographic factors such as age and migration patterns further influence these variations.
+
+The findings underscore the limitations of applying uniform ratio estimations across diverse populations and highlight the importance of accounting for regional demographic and economic differences in population estimation. Future studies could refine estimation techniques to better account for such heterogeneity, improving the accuracy and reliability of these methods.
+The remainder of this paper is structured as follows: [@sec-data] outlines the process for obtaining and preparing the dataset. [@sec-result] describes the estimation methodology and the resulting comparisons with actual respondent data. [@sec-discussion] explains the observed differences and their underlying causes.
+
+
+# Data {#sec-data}
+
+We obtained the data from IPUMS USA [@ipumsusa2022]with follwing steps:
 First, open the IPUMS website and navigate to the IPUMS USA section. Once there, create a data set by selecting samples from the '2022 ACS' dataset and submit the selection. Next, choose the following harmonized variables for your dataset: (i) STATEICP under GEOGRAPHIC VARIABLES--HOUSEHOLD, (ii) SEX under DEMOGRAPHIC VARIABLES--PERSON, and (iii) EDUC under EDUCATION VARIABLES--PERSON.
 After selecting the variables, proceed to view your cart and create the data extract. Change the data format from the default .dat to .csv, then submit the extract. Wait until the status of your data extract changes to 'completed,' at which point you can download the data.
 Upon downloading, a file with the .gz suffix will be received. Decompress this file to obtain the final dataset in .csv format.
+
+The packages used in this paper provide essential tools for data analysis and reporting.[@tidyverse] offers a suite for data manipulation, visualization, and programming. [@dplyr] simplifies data manipulation with tools for summarizing. [@knitr] supports dynamic report generation, integrating code and results. [@readr] efficiently imports rectangular text data. [@testthat] allows for testing data processing steps to ensure accuracy.
 
 
 ```{r}
@@ -101,12 +117,6 @@ final_dataset$estimate_repondent <- round(final_dataset$Doctoral_Count / doc_rat
 final_dataset$respondent_difference <- final_dataset$Total_Num - final_dataset$estimate_repondent
 
 
-
-
-
-
-
-
 ```
 
 ```{r}
@@ -122,11 +132,19 @@ kable(final_dataset,
 
 ```
 
-# Estimation
+# Result {#sec-result}
+
+## Estimation
 
 We start by matching STATEICP to the state name and getting the actual value for each state and replacing NA with 0. Select California's row from the actual values we get, using the number of doctoral degrees in the California data as a percentage of total respondents to get a ratio. Finally, the doctoral degree and the proportion of total respondents obtained in California are mapped to each state, and the estimated total respondents of each state is obtained from the doctoral degree of each state. The respondents difference column is obtained by comparing the value we obtained with the actual value.
 
-# Explanation of the Difference 
+## Summary of the Result
+
+From [@tbl-1], we can see significant differences in the estimated total number of respondents across U.S. states, based on the proportion of respondents with a PhD in California. In many states, the estimated difference is nearly half of the state's actual respondent count, such as in Alabama, Alaska, and Wisconsin. The estimates generally exceed the actual respondent count, except in Colorado, Washington D.C., New Mexico, Maryland, and Virginia, where the estimates are lower than the actual numbers.
+
+# Discussion {#sec-discussion}
+
+## Explanation of the Difference 
 
 There are several reasons why the ratio of people holding a doctoral degree in each state can vary, such as state education policies or cultural attitudes toward education that lead to differences in the distribution of educational resources across states. For instance, states with more universities and research institutions tend to have a higher proportion of residents with advanced degrees. Therefore, using California's doctorate-to-respondent ratio as representative of all states may not be accurate, as it does not account for these regional differences in education opportunities and demographics.
 
