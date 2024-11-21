@@ -1,0 +1,138 @@
+---
+title: "Summary of Respondents and Doctoral Counts with Estimation by State for 2022 ACS"
+author: 
+  - Yiyi Feng
+  - Bo Tang
+  - Mingjin Zhan
+  - Eric Pang
+  - Sakura Hu
+date: today
+date-format: long
+format:
+  pdf:
+    toc: true
+    number-sections: true
+number-sections: true
+abstract: "This exercise is for estimating the number of respondents who get a doctoral degree for each state in US 2022 ACS."
+bibliography: references.bib
+---
+
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(knitr)
+
+#### Read data ####
+data <-
+  read_csv(
+    file = "usa_00001.csv",
+    show_col_types = FALSE)
+```
+
+
+# Data Obtaining
+
+To obtain the data from IPUMS USA [@ipumsusa2022], follow these steps:
+First, open the IPUMS website and navigate to the IPUMS USA section. Once there, create a data set by selecting samples from the '2022 ACS' dataset and submit the selection. Next, choose the following harmonized variables for your dataset: (i) STATEICP under GEOGRAPHIC VARIABLES--HOUSEHOLD, (ii) SEX under DEMOGRAPHIC VARIABLES--PERSON, and (iii) EDUC under EDUCATION VARIABLES--PERSON.
+After selecting the variables, proceed to view your cart and create the data extract. Change the data format from the default .dat to .csv, then submit the extract. Wait until the status of your data extract changes to 'completed,' at which point you can download the data.
+Upon downloading, a file with the .gz suffix will be received. Decompress this file to obtain the final dataset in .csv format.
+
+
+```{r}
+#| echo: false
+#| message: false
+
+# Create a named vector mapping STATEICP codes to state names
+state_mapping <- c(
+  "01" = "Connecticut", "02" = "Maine", "03" = "Massachusetts",
+  "04" = "New Hampshire", "05" = "Rhode Island", "06" = "Vermont",
+  "11" = "Delaware", "12" = "New Jersey", "13" = "New York",
+  "14" = "Pennsylvania", "21" = "Illinois", "22" = "Indiana",
+  "23" = "Michigan", "24" = "Ohio", "25" = "Wisconsin",
+  "31" = "Iowa", "32" = "Kansas", "33" = "Minnesota", 
+  "34" = "Missouri", "35" = "Nebraska", "36" = "North Dakota",
+  "37" = "South Dakota", "40" = "Virginia", "41" = "Alabama",
+  "42" = "Arkansas", "43" = "Florida", "44" = "Georgia",
+  "45" = "Louisiana", "46" = "Mississippi", "47" = "North Carolina",
+  "48" = "South Carolina", "49" = "Texas", "51" = "Kentucky",
+  "52" = "Maryland", "53" = "Oklahoma", "54" = "Tennessee",
+  "56" = "West Virginia", "61" = "Arizona", "62" = "Colorado",
+  "63" = "Idaho", "64" = "Montana", "65" = "Nevada",
+  "66" = "New Mexico", "67" = "Utah", "68" = "Wyoming",
+  "71" = "California", "72" = "Oregon", "73" = "Washington",
+  "81" = "Alaska", "82" = "Hawaii", "83" = "Puerto Rico",
+  "96" = "State groupings (1980 Urban/rural sample)",
+  "97" = "Military/Mil. Reservations", "98" = "District of Columbia",
+  "99" = "State not identified"
+)
+
+# Map STATEICP codes to state names
+data$State <- state_mapping[as.character(data$STATEICP)]
+
+# Count the total number of rows for each state
+state_counts <- as.data.frame(table(data$State))
+colnames(state_counts) <- c("State", "Total_Num")
+
+# Count the number of doctoral rows (EDUCD = 116) for each state
+doctoral_counts <- as.data.frame(table(data$State[data$EDUCD == 116]))
+colnames(doctoral_counts) <- c("State", "Doctoral_Count")
+
+# Merge the total counts and doctoral counts into one dataset
+final_dataset <- merge(state_counts, doctoral_counts, by = "State", all.x = TRUE)
+
+# Replace any NA values in the Doctoral_Count column with 0 (for states with no doctoral degrees)
+final_dataset$Doctoral_Count[is.na(final_dataset$Doctoral_Count)] <- 0
+
+# Filter the row corresponding to California
+california_row <- final_dataset[final_dataset$State == "California", ]
+
+# Calculate the ratio of Total_Num to Doctoral_Count for California
+doc_ratio_Califor <- california_row$Doctoral_Count / california_row$Total_Num
+
+# Calculate and round the estimate_doctoral column to integers
+final_dataset$estimate_repondent <- round(final_dataset$Doctoral_Count / doc_ratio_Califor)
+
+# Add the doctoral_difference column by subtracting estimate_doctoral from Doctoral_Count
+final_dataset$respondent_difference <- final_dataset$Total_Num - final_dataset$estimate_repondent
+
+
+
+
+
+
+
+
+```
+
+```{r}
+#| label: tbl-1
+#| tbl-cap: Summary of Respondents and Doctoral Counts with Estimation by State for 2022 ACS
+#| echo: false
+#| message: false
+
+# Create a table using kable
+kable(final_dataset, 
+      col.names = c("State", "Total Respondents", "Total Actual Doctor", 
+                    "Estimated Respondents", "Difference in Respondents"))
+
+```
+
+# Estimation
+
+We start by matching STATEICP to the state name and getting the actual value for each state and replacing NA with 0. Select California's row from the actual values we get, using the number of doctoral degrees in the California data as a percentage of total respondents to get a ratio. Finally, the doctoral degree and the proportion of total respondents obtained in California are mapped to each state, and the estimated total respondents of each state is obtained from the doctoral degree of each state. The respondents difference column is obtained by comparing the value we obtained with the actual value.
+
+# Explanation of the Difference 
+
+There are several reasons why the ratio of people holding a doctoral degree in each state can vary, such as state education policies or cultural attitudes toward education that lead to differences in the distribution of educational resources across states. For instance, states with more universities and research institutions tend to have a higher proportion of residents with advanced degrees. Therefore, using California's doctorate-to-respondent ratio as representative of all states may not be accurate, as it does not account for these regional differences in education opportunities and demographics.
+
+Additionally, population demographics vary between states. States with more young individuals may have fewer people with advanced degrees, while states with older populations may have more. States with industries that require highly educated workers often have more individuals with advanced degrees, and states with a higher cost of living may also attract more individuals with advanced degrees due to higher earning potential.
+
+\newpage
+
+# References
+
