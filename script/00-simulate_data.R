@@ -46,5 +46,5 @@ head(simulated_data)
 #### Save data ####
 
 # Save data as a Parquet file
-write_csv(simulated_data, "data/simulated_data/simulated_ACS_data.csv")
+write_csv(simulated_data, "data/simulated_ACS_data.csv")
 

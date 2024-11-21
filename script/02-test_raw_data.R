@@ -14,7 +14,7 @@ library(tidyverse)
 library(testthat)
 
 # Read the data
-raw_data <- read_csv(file = "data/raw_data/usa_00001.csv", show_col_types = FALSE)
+raw_data <- read_csv(file = "data/usa_00001.csv", show_col_types = FALSE)
 
 #### Test data ####
 

@@ -15,7 +15,7 @@ library(tidyverse)
 library(testthat)
 
 # Read the data
-simulated_data <- read_csv(file = "data/simulated_data/simulated_ACS_data.csv", show_col_types = FALSE)
+simulated_data <- read_csv(file = "data/simulated_ACS_data.csv", show_col_types = FALSE)
 
 #### Test data ####
 
