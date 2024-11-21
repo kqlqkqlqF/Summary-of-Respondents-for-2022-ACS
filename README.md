@@ -19,4 +19,4 @@ The respondents data is available on the IPUMS USA website. For more information
 
 ## Statement on LLM usage
 
-Aspects of the code were written with the help of Chatgpt4.0, the entire chat history is available at other/llm_usage/usage.txt.
+Aspects of the code, abstract, and introduction were written with the help of Chatgpt4.0, the entire chat history is available at other/llm_usage/usage.txt.
