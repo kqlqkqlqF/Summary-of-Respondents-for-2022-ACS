@@ -35,7 +35,7 @@ library(knitr)
 #### Read data ####
 data <-
   read_csv(
-    file = "../data/raw_data/usa_00001.csv",
+    file = "../data/usa_00001.csv",
     show_col_types = FALSE)
 ```
 
